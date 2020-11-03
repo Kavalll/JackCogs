@@ -36,7 +36,7 @@ class ModRoles(commands.Cog):
             self, identifier=176070082584248320, force_registration=True
         )
         self.config.register_guild(
-            assignable_roles=[], allow_bots=False, toprole_check=True
+            assignable_roles=[], allow_bots=False
         )
 
     async def red_get_data_for_user(self, *, user_id: int) -> Dict[str, Any]:
@@ -67,12 +67,6 @@ class ModRoles(commands.Cog):
             return False
         if author.id == member.id:
             return True
-        if settings["toprole_check"] and member.top_role > author.top_role:
-            await ctx.send(
-                "You can only assign roles to members"
-                " whose top role is lower than yours!"
-            )
-            return False
         if await is_mod_or_superior(self.bot, member):
             await ctx.send("You can't assign roles to member who is mod or higher.")
             return False
@@ -253,44 +247,3 @@ class ModRoles(commands.Cog):
             )
         await ctx.send(message)
 
-    @modroles_targets.command(name="toprole")
-    async def modroles_targets_toprole(
-        self, ctx: GuildContext, enabled: Optional[bool] = None
-    ) -> None:
-        """
-        Enable/disable top role check.
-
-        When enabled, this will only allow user to assign roles to users
-        with lower top role than theirs.
-
-        Leave empty to check current settings.
-        """
-        config_value = self.config.guild(ctx.guild).toprole_check
-        if enabled is None:
-            if await config_value():
-                message = (
-                    "Commands for assigning and unassigning roles only allow command"
-                    " caller to assign roles to users with lower top role than theirs."
-                )
-            else:
-                message = (
-                    "Commands for assigning and unassigning roles"
-                    " allow command caller to assign roles to any user."
-                )
-            await ctx.send(message)
-            return
-
-        await config_value.set(enabled)
-
-        if enabled:
-            message = (
-                "Commands for assigning and unassigning roles"
-                " will now only allow command caller to assign roles"
-                " to users with lower top role than theirs."
-            )
-        else:
-            message = (
-                "Commands for assigning and unassigning roles will now"
-                " allow command caller to assign roles to any user."
-            )
-        await ctx.send(message)
